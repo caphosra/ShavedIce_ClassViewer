@@ -14,7 +14,7 @@ namespace ShavedIce_ClassViewer
         {
             var list = new List<InstanceOrder>();
 
-            list.Add("Type : " + type.Name, 0);
+            list.Add(type.Name, 0);
             {
                 list.Add("fullname : " + type.FullName, 1);
 
@@ -103,9 +103,7 @@ namespace ShavedIce_ClassViewer
             sb.Append(text);
             return sb.ToString();
         }
-
-        const int HEADER_MAX = 1;
-
+        
         public string ToStringHTML()
         {
             StringBuilder sb = new StringBuilder();
@@ -114,9 +112,9 @@ namespace ShavedIce_ClassViewer
             text = text.Replace("<", "&lt;");
             text = text.Replace(">", "&gt;");
 
-            if(indent < HEADER_MAX)
+            if(indent == 0)
             {
-                sb.Append("<h" + (indent + 1) + ">" + text + "</h" + (indent + 1) + ">");
+                sb.Append("<h1 id=\"" + text + "\">" + text + "</h1>");
             }
             else
             {
