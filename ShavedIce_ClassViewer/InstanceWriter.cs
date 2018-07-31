@@ -72,6 +72,7 @@ namespace ShavedIce_ClassViewer
             }
         }
 
+        [Obsolete]
         public static void WriteToHTMLFile(StreamWriter sw, Type type)
         {
             var list = Output(type);
@@ -79,6 +80,17 @@ namespace ShavedIce_ClassViewer
             {
                 sw.WriteLine(order.ToStringHTML());
             }
+        }
+
+        public static string GetHTMLText(Type type)
+        {
+            var list = Output(type);
+            StringBuilder sb = new StringBuilder();
+            foreach (var order in list)
+            {
+                sb.AppendLine(order.ToStringHTML());
+            }
+            return sb.ToString();
         }
     }
 
@@ -114,7 +126,7 @@ namespace ShavedIce_ClassViewer
 
             if(indent == 0)
             {
-                sb.Append("<h1 id=\"" + text + "\">" + text + "</h1>");
+                sb.Append("<h2 id=\"" + text + "\">" + text + "</h2>");
             }
             else
             {

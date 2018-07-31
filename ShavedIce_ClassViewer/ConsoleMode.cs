@@ -24,15 +24,15 @@ namespace ShavedIce_ClassViewer
                 }
                 else if (Program.HTMLMode)
                 {
-                    using (StreamWriter sw = new StreamWriter(Program.FileName))
+                    StringBuilder sb = new StringBuilder();
+
+                    foreach (var type in types)
                     {
-                        WriteHTMLHeader(sw, Program.AssetFile.FullName);
-                        foreach (var type in types)
-                        {
-                            InstanceWriter.WriteToHTMLFile(sw, type);
-                        }
-                        sw.Write("</body></html>");
+                        sb.AppendLine(InstanceWriter.GetHTMLText(type));
                     }
+
+                    WriteHTML(Program.FileName, Program.AssetFile.FullName, sb.ToString());
+
                     System.Diagnostics.Process.Start(Program.FileName);
                 }
                 else
@@ -62,12 +62,9 @@ namespace ShavedIce_ClassViewer
                 }
                 else if (Program.HTMLMode)
                 {
-                    using (StreamWriter sw = new StreamWriter(Program.FileName))
-                    {
-                        WriteHTMLHeader(sw, type.Name);
-                        InstanceWriter.WriteToHTMLFile(sw, type);
-                        sw.Write("</body></html>");
-                    }
+                    WriteHTML(Program.FileName, type.Name, InstanceWriter.GetHTMLText(type));
+
+                    System.Diagnostics.Process.Start(Program.FileName);
                 }
                 else
                 {
@@ -79,35 +76,24 @@ namespace ShavedIce_ClassViewer
             }
         }
 
-        static void WriteHTMLHeader(StreamWriter sw, string title)
+        static void WriteHTML(string path, string title, string text)
         {
-            sw.WriteLine("<!DOCTYPE html>");
-            sw.WriteLine("<html>");
-            sw.WriteLine(" <head>");
-            sw.WriteLine("  <title>" + title + "</title>");
-            sw.WriteLine("  <script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js\"></script>");
-            sw.WriteLine("  <script type=\"text/javascript\">");
-            sw.WriteLine("   function goToClass()");
-            sw.WriteLine("   {");
-            sw.WriteLine("    id = '#' + document.forms.classFinder.textBox.value;");
-            sw.WriteLine("    if($(id).length)");
-            sw.WriteLine("    {");
-            sw.WriteLine("     speed = 100;");
-            sw.WriteLine("     var position = $(id).offset().top;");
-            sw.WriteLine("     $(\"html, body\").animate({ scrollTop: position }, speed, \"swing\");");
-            sw.WriteLine("    }");
-            sw.WriteLine("    else");
-            sw.WriteLine("    {");
-            sw.WriteLine("     window.alert(id + \" isn't exist\");");
-            sw.WriteLine("    }");
-            sw.WriteLine("   }");
-            sw.WriteLine("  </script>");
-            sw.WriteLine(" </head>");
-            sw.WriteLine(" <body>");
-            sw.WriteLine("  <form id=\"classFinder\" action=\"\">");
-            sw.WriteLine("   <input id=\"textBox\" type=\"text\" value = \"\"/>");
-            sw.WriteLine("   <input type=\"button\" value=\"GO\" onClick=\"goToClass();\"/>");
-            sw.WriteLine("  </form>");
+            string template = "";
+            template = File.ReadAllText(
+                Path.GetDirectoryName(
+                    System.Reflection.Assembly.GetExecutingAssembly().Location 
+                    ) +
+                    "\\Template.html");
+
+            template = template.Replace("$$title$$", title);
+            template = template.Replace("$$text$$", text);
+            template = template.Replace("$$cssPath$$", 
+                Path.GetDirectoryName(
+                        System.Reflection.Assembly.GetExecutingAssembly().Location
+                    ) +
+                    "\\ShavedIce_HTML_Style.css");
+
+            File.WriteAllText(Program.FileName, template);
         }
     }
 
