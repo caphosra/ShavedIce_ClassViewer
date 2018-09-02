@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>$$title$$</title>
+
+    <link rel="stylesheet" href="$$cssPath$$" type="text/css">
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        function goToClass() {
+            className = document.forms.classFinder.textBox.value;
+            id = '#' + className;
+            if ($(id).length) {
+                speed = 100;
+                var position = $(id).offset().top;
+                $("html, body").animate({ scrollTop: position }, speed, "swing");
+            }
+            else {
+                window.alert(className + " isn't exist");
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>$$title$$</h1>
+    <form id="classFinder" action="">
+        <input id="textBox" type="text" value=""/>
+        <input type="button" value="GO" onclick="goToClass();"/>
+    </form>
+    $$text$$
+</body>
+</html>

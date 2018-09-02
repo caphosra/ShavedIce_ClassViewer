@@ -13,9 +13,9 @@ namespace ShavedIce_ClassViewer
         {
             if (Program.TypeName == null)
             {
-                var types = Program.AssetFile.GetTypes();
+                var types = Program.LoadedAssembly.GetTypes();
 
-                if (Program.FileName == null)
+                if (Program.FileName == "")
                 {
                     foreach (var type in types)
                     {
@@ -24,15 +24,15 @@ namespace ShavedIce_ClassViewer
                 }
                 else if (Program.HTMLMode)
                 {
-                    using (StreamWriter sw = new StreamWriter(Program.FileName))
+                    StringBuilder sb = new StringBuilder();
+
+                    foreach (var type in types)
                     {
-                        sw.Write("<!DOCTYPE html><html><body>");
-                        foreach (var type in types)
-                        {
-                            InstanceWriter.WriteToHTMLFile(sw, type);
-                        }
-                        sw.Write("</body></html>");
+                        sb.AppendLine(InstanceWriter.GetHTMLText(type));
                     }
+
+                    InstanceWriter.WriteHTML(Program.FileName, Program.LoadedAssembly.FullName, sb.ToString());
+
                     System.Diagnostics.Process.Start(Program.FileName);
                 }
                 else
@@ -49,28 +49,22 @@ namespace ShavedIce_ClassViewer
             }
             else
             {
-                Type type = null;
-                try
-                {
-                    type = Program.AssetFile.GetType(Program.TypeName);
-                }
-                catch (Exception e)
+                var type = Program.LoadedAssembly.GetType(Program.TypeName);
+                if (type == null)
                 {
                     Console.WriteLine("ERROR 1001 : CAN'T LOAD " + Program.TypeName);
+                    return;
                 }
 
-                if (Program.FileName == null)
+                if (Program.FileName == "")
                 {
                     InstanceWriter.WriteToConsole(type);
                 }
                 else if (Program.HTMLMode)
                 {
-                    using (StreamWriter sw = new StreamWriter(Program.FileName))
-                    {
-                        sw.Write("<!DOCTYPE html><html><body>");
-                        InstanceWriter.WriteToHTMLFile(sw, type);
-                        sw.Write("</body></html>");
-                    }
+                    InstanceWriter.WriteHTML(Program.FileName, type.Name, InstanceWriter.GetHTMLText(type));
+
+                    System.Diagnostics.Process.Start(Program.FileName);
                 }
                 else
                 {
@@ -81,6 +75,8 @@ namespace ShavedIce_ClassViewer
                 }
             }
         }
+
+        
     }
 
     public class ConsoleChangeColor : IDisposable

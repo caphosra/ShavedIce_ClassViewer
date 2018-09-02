@@ -14,7 +14,7 @@ namespace ShavedIce_ClassViewer
         {
             var list = new List<InstanceOrder>();
 
-            list.Add("Type : " + type.Name, 0);
+            list.Add(type.Name, 0);
             {
                 list.Add("fullname : " + type.FullName, 1);
 
@@ -72,6 +72,7 @@ namespace ShavedIce_ClassViewer
             }
         }
 
+        [Obsolete]
         public static void WriteToHTMLFile(StreamWriter sw, Type type)
         {
             var list = Output(type);
@@ -79,6 +80,37 @@ namespace ShavedIce_ClassViewer
             {
                 sw.WriteLine(order.ToStringHTML());
             }
+        }
+
+        public static string GetHTMLText(Type type)
+        {
+            var list = Output(type);
+            StringBuilder sb = new StringBuilder();
+            foreach (var order in list)
+            {
+                sb.AppendLine(order.ToStringHTML());
+            }
+            return sb.ToString();
+        }
+
+        public static void WriteHTML(string path, string title, string text)
+        {
+            string template = "";
+            template = File.ReadAllText(
+                Path.GetDirectoryName(
+                    System.Reflection.Assembly.GetExecutingAssembly().Location
+                    ) +
+                    "\\Template.html");
+
+            template = template.Replace("$$title$$", title);
+            template = template.Replace("$$text$$", text);
+            template = template.Replace("$$cssPath$$",
+                Path.GetDirectoryName(
+                        System.Reflection.Assembly.GetExecutingAssembly().Location
+                    ) +
+                    "\\ShavedIce_HTML_Style.css");
+
+            File.WriteAllText(Program.FileName, template);
         }
     }
 
@@ -103,9 +135,7 @@ namespace ShavedIce_ClassViewer
             sb.Append(text);
             return sb.ToString();
         }
-
-        const int HEADER_MAX = 1;
-
+        
         public string ToStringHTML()
         {
             StringBuilder sb = new StringBuilder();
@@ -114,9 +144,9 @@ namespace ShavedIce_ClassViewer
             text = text.Replace("<", "&lt;");
             text = text.Replace(">", "&gt;");
 
-            if(indent < HEADER_MAX)
+            if(indent == 0)
             {
-                sb.Append("<h" + (indent + 1) + ">" + text + "</h" + (indent + 1) + ">");
+                sb.Append("<h2 id=\"" + text + "\">" + text + "</h2>");
             }
             else
             {
