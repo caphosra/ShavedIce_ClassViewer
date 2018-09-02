@@ -1,6 +1,7 @@
 ﻿#pragma warning disable 168
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,7 +13,7 @@ namespace ShavedIce_ClassViewer
 {
     static class Program
     {
-        public static Assembly AssetFile { get; private set; }
+        public static Assembly LoadedAssembly { get; private set; }
 
         public static bool VisualMode { get; private set; }
         public static bool HTMLMode { get; private set; }
@@ -24,18 +25,110 @@ namespace ShavedIce_ClassViewer
         {
             VisualMode = false;
             HTMLMode = false;
-            FileName = null;
+            FileName = "";
             TypeName = null;
 
             if (args.Length == 0)
             {
-                Console.WriteLine("ERROR 0001 : ARGS ARE NULL");
-                return -1;
+                bool can_not_exit = true;
+
+                while (can_not_exit)
+                {
+                    Console.Write("ShavedIce_ClassViewer "  + FileName + "$ ");
+                    string[] cmd = Console.ReadLine().SplitDoubleQuotation();
+
+                    Console.WriteLine(cmd.ToStringAll(","));
+
+                    if (cmd.Length == 0)
+                    {
+                        continue;
+                    }
+
+                    switch(cmd[0])
+                    {
+                        case "writeconsole":
+                        case "print":
+                            {
+                                foreach (var type in LoadedAssembly.GetTypes())
+                                {
+                                    InstanceWriter.WriteToConsole(type);
+                                }
+                            }
+                            break;
+                        case "writefile":
+                            {
+                                if (cmd.Length == 2)
+                                {
+                                    using (StreamWriter sw = new StreamWriter(cmd[1]))
+                                    {
+                                        foreach (var type in LoadedAssembly.GetTypes())
+                                        {
+                                            InstanceWriter.WriteToTextFile(sw, type);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("ARG COUNT IS WRONG");
+                                }
+                            }
+                            break;
+                        case "writehtml":
+                            {
+                                if (cmd.Length == 2)
+                                {
+                                    StringBuilder sb = new StringBuilder();
+
+                                    foreach (var type in LoadedAssembly.GetTypes())
+                                    {
+                                        sb.AppendLine(InstanceWriter.GetHTMLText(type));
+                                    }
+
+                                    InstanceWriter.WriteHTML(cmd[1], LoadedAssembly.FullName, sb.ToString());
+
+                                    System.Diagnostics.Process.Start(cmd[1]);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("ARG COUNT IS WRONG");
+                                }
+                            }
+                            break;
+                        case "load":
+                            {
+                                if(cmd.Length == 2)
+                                {
+                                    try
+                                    {
+                                        LoadedAssembly = Assembly.LoadFile(cmd[1]);
+                                    }
+                                    catch(Exception e)
+                                    {
+                                        Console.WriteLine("CAN'T LOAD FILE\r\n" + e.ToString());
+                                    }
+                                }
+                                else
+                                {
+                                    Console.WriteLine("ARG COUNT IS WRONG");
+                                }
+                            }
+                            break;
+                        case "exit":
+                            {
+                                can_not_exit = false;
+                            }
+                            break;
+                        default:
+                            continue;
+                    }
+                }
+
+                return 0;
             }
 
             try
             {
-                AssetFile = Assembly.LoadFrom(args[0]);
+                LoadedAssembly = Assembly.LoadFrom(args[0]);
             }
             catch (Exception e)
             {
@@ -108,6 +201,40 @@ namespace ShavedIce_ClassViewer
             }
 
             return 0;
+        }
+    }
+
+    static class StringEx
+    {
+        public static string[] SplitDoubleQuotation(this string s, bool ignoreDoubleQuotation = true)
+        {
+            List<string> list = new List<string>();
+
+            bool inDoubleQuotation = false;
+
+            StringBuilder sb = new StringBuilder();
+
+            foreach(char c in s)
+            {
+                if((!inDoubleQuotation) && c == ' ')
+                {
+                    list.Add(sb.ToString());
+                    sb.Clear();
+                }
+                else if(c == '\"')
+                {
+                    inDoubleQuotation = !inDoubleQuotation;
+                    if(!ignoreDoubleQuotation) sb.Append(c);
+                }
+                else
+                {
+                    sb.Append(c);
+                }
+            }
+
+            list.Add(sb.ToString());
+
+            return list.ToArray();
         }
     }
 }

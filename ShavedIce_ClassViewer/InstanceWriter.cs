@@ -92,6 +92,26 @@ namespace ShavedIce_ClassViewer
             }
             return sb.ToString();
         }
+
+        public static void WriteHTML(string path, string title, string text)
+        {
+            string template = "";
+            template = File.ReadAllText(
+                Path.GetDirectoryName(
+                    System.Reflection.Assembly.GetExecutingAssembly().Location
+                    ) +
+                    "\\Template.html");
+
+            template = template.Replace("$$title$$", title);
+            template = template.Replace("$$text$$", text);
+            template = template.Replace("$$cssPath$$",
+                Path.GetDirectoryName(
+                        System.Reflection.Assembly.GetExecutingAssembly().Location
+                    ) +
+                    "\\ShavedIce_HTML_Style.css");
+
+            File.WriteAllText(Program.FileName, template);
+        }
     }
 
     class InstanceOrder

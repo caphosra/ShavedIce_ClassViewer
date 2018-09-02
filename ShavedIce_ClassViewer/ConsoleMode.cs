@@ -13,9 +13,9 @@ namespace ShavedIce_ClassViewer
         {
             if (Program.TypeName == null)
             {
-                var types = Program.AssetFile.GetTypes();
+                var types = Program.LoadedAssembly.GetTypes();
 
-                if (Program.FileName == null)
+                if (Program.FileName == "")
                 {
                     foreach (var type in types)
                     {
@@ -31,7 +31,7 @@ namespace ShavedIce_ClassViewer
                         sb.AppendLine(InstanceWriter.GetHTMLText(type));
                     }
 
-                    WriteHTML(Program.FileName, Program.AssetFile.FullName, sb.ToString());
+                    InstanceWriter.WriteHTML(Program.FileName, Program.LoadedAssembly.FullName, sb.ToString());
 
                     System.Diagnostics.Process.Start(Program.FileName);
                 }
@@ -49,20 +49,20 @@ namespace ShavedIce_ClassViewer
             }
             else
             {
-                var type = Program.AssetFile.GetType(Program.TypeName);
+                var type = Program.LoadedAssembly.GetType(Program.TypeName);
                 if (type == null)
                 {
                     Console.WriteLine("ERROR 1001 : CAN'T LOAD " + Program.TypeName);
                     return;
                 }
 
-                if (Program.FileName == null)
+                if (Program.FileName == "")
                 {
                     InstanceWriter.WriteToConsole(type);
                 }
                 else if (Program.HTMLMode)
                 {
-                    WriteHTML(Program.FileName, type.Name, InstanceWriter.GetHTMLText(type));
+                    InstanceWriter.WriteHTML(Program.FileName, type.Name, InstanceWriter.GetHTMLText(type));
 
                     System.Diagnostics.Process.Start(Program.FileName);
                 }
@@ -76,25 +76,7 @@ namespace ShavedIce_ClassViewer
             }
         }
 
-        static void WriteHTML(string path, string title, string text)
-        {
-            string template = "";
-            template = File.ReadAllText(
-                Path.GetDirectoryName(
-                    System.Reflection.Assembly.GetExecutingAssembly().Location 
-                    ) +
-                    "\\Template.html");
-
-            template = template.Replace("$$title$$", title);
-            template = template.Replace("$$text$$", text);
-            template = template.Replace("$$cssPath$$", 
-                Path.GetDirectoryName(
-                        System.Reflection.Assembly.GetExecutingAssembly().Location
-                    ) +
-                    "\\ShavedIce_HTML_Style.css");
-
-            File.WriteAllText(Program.FileName, template);
-        }
+        
     }
 
     public class ConsoleChangeColor : IDisposable
